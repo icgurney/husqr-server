@@ -104,6 +104,8 @@ const users: FastifyPluginAsyncTypebox = async (
       preHandler: fastify.auth([fastify.verifyTokenUserIsParamsMe]) as any,
     },
     async function (request, reply) {
+      if (request.body.about && request.body.about.length > 1000)
+        return reply.badRequest("about must be less than 1000 characters");
       const { me } = request.params;
       try {
         const user = await fastify.prisma.user.update({

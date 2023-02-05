@@ -78,6 +78,11 @@ const index: FastifyPluginAsyncTypebox = async (
       }),
     },
     handler: async (request, reply) => {
+      if (request.body.username.length < 3 || request.body.username.length > 20)
+        return reply.badRequest("username must be between 3 and 20 characters");
+      if (request.body.password.length < 3 || request.body.password.length > 20)
+        return reply.badRequest("password must be between 3 and 20 characters");
+
       // hash password
       bcrypt.hash(request.body.password, 8, async function (err, hash) {
         if (err) {
