@@ -1,6 +1,11 @@
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { HeadersSchema } from "./schema";
 import { Type } from "@sinclair/typebox";
+import { Prisma } from "@prisma/client";
+import {
+  PRISMA_CONNECT_ERROR_CODE,
+  PRISMA_CONNECT_MULTI_ERROR_CODE,
+} from "../../plugins/prisma";
 
 const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
   // get likes for a husq
@@ -100,6 +105,14 @@ const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         });
         return result ? result.likes : reply.notFound();
       } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (
+            e.code === PRISMA_CONNECT_ERROR_CODE ||
+            e.code === PRISMA_CONNECT_MULTI_ERROR_CODE
+          ) {
+            return reply.notFound();
+          }
+        }
         request.log.error(e);
         return reply.internalServerError();
       }
@@ -151,6 +164,14 @@ const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         });
         return result ? result.likes : reply.notFound();
       } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (
+            e.code === PRISMA_CONNECT_ERROR_CODE ||
+            e.code === PRISMA_CONNECT_MULTI_ERROR_CODE
+          ) {
+            return reply.notFound();
+          }
+        }
         request.log.error(e);
         return reply.internalServerError();
       }
