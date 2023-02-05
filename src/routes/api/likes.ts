@@ -1,0 +1,161 @@
+import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
+import { HeadersSchema } from "./schema";
+import { Type } from "@sinclair/typebox";
+
+const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
+  // get likes for a husq
+  fastify.get(
+    "/:id/likes",
+    {
+      schema: {
+        headers: HeadersSchema,
+        params: Type.Object({
+          id: Type.Number(),
+        }),
+        querystring: Type.Object({
+          cursor: Type.Optional(Type.Number()),
+        }),
+      },
+    },
+    async function (request, reply) {
+      const { id } = request.params;
+      const { cursor } = request.query;
+      try {
+        if (cursor) {
+          const result = await fastify.prisma.husq.findUnique({
+            where: {
+              id: id,
+            },
+            select: {
+              likes: {
+                take: 5,
+                skip: 1,
+                cursor: {
+                  id: cursor,
+                },
+              },
+            },
+          });
+          return result ? result.likes : reply.notFound();
+        } else {
+          const result = await fastify.prisma.husq.findUnique({
+            where: {
+              id: id,
+            },
+            select: {
+              likes: {
+                take: 5,
+              },
+            },
+          });
+          return result ? result.likes : reply.notFound();
+        }
+      } catch (e) {
+        request.log.error(e);
+        return reply.internalServerError();
+      }
+    }
+  );
+
+  // like a husq
+  fastify.post(
+    "/:id/likes",
+    {
+      schema: {
+        headers: HeadersSchema,
+        params: Type.Object({
+          id: Type.Number(),
+        }),
+      },
+    },
+    async function (request, reply) {
+      const { id } = request.params;
+      try {
+        const husqToLike = await fastify.prisma.husq.findUnique({
+          where: {
+            id: id,
+          },
+        });
+        if (!husqToLike) return reply.notFound();
+        if (husqToLike.authorId === request.user.id) return reply.badRequest();
+        const result = await fastify.prisma.husq.update({
+          where: {
+            id: id,
+          },
+          data: {
+            likes: {
+              connect: {
+                id: request.user.id,
+              },
+            },
+          },
+          select: {
+            likes: {
+              take: 1,
+              cursor: {
+                id: request.user.id,
+              },
+            },
+          },
+        });
+        return result ? result.likes : reply.notFound();
+      } catch (e) {
+        request.log.error(e);
+        return reply.internalServerError();
+      }
+    }
+  );
+
+  // unlike a husq
+  fastify.delete(
+    "/:id/likes/:me",
+    {
+      schema: {
+        headers: HeadersSchema,
+        params: Type.Object({
+          id: Type.Number(),
+          me: Type.Number(),
+        }),
+      },
+      preHandler: fastify.auth([fastify.verifyTokenUserIsParamsMe]) as any,
+    },
+    async function (request, reply) {
+      const { id, me } = request.params;
+      try {
+        const husqToLike = await fastify.prisma.husq.findUnique({
+          where: {
+            id: id,
+          },
+        });
+        if (!husqToLike) return reply.notFound();
+        if (husqToLike.authorId === request.user.id) return reply.badRequest();
+        const result = await fastify.prisma.husq.update({
+          where: {
+            id: id,
+          },
+          data: {
+            likes: {
+              disconnect: {
+                id: me,
+              },
+            },
+          },
+          select: {
+            likes: {
+              take: 1,
+              cursor: {
+                id: me,
+              },
+            },
+          },
+        });
+        return result ? result.likes : reply.notFound();
+      } catch (e) {
+        request.log.error(e);
+        return reply.internalServerError();
+      }
+    }
+  );
+};
+
+export default likes;

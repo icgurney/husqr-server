@@ -1,0 +1,42 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int             @id @default(autoincrement())
+  username       String          @unique
+  name           String
+  about          String?
+  husqs          Husq[]
+  follows        User[]          @relation("Followers")
+  followers      User[]          @relation("Followers")
+  likes          Husq[]          @relation("Likes")
+  hashedPassword HashedPassword?
+}
+
+model HashedPassword {
+  userId   Int    @id
+  user     User   @relation(fields: [userId], references: [id])
+  password String
+}
+
+model Husq {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  deleted   Boolean  @default(false)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  text      String
+  replies   Husq[]   @relation("Thread")
+  reply     Husq?    @relation("Thread", fields: [replyId], references: [id])
+  replyId   Int?
+  likes     User[]   @relation("Likes")
+}
