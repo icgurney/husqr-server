@@ -2,6 +2,7 @@ import fp from "fastify-plugin";
 import { fastifyAuth } from "@fastify/auth";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { fastifyJwt } from "@fastify/jwt";
+import { fastifyBasicAuth } from "@fastify/basic-auth";
 
 declare module "@fastify/jwt" {
   interface FastifyJWT {
@@ -28,6 +29,17 @@ export default fp(async (fastify) => {
     sign: {
       expiresIn: "1h",
     },
+  });
+  fastify.register(fastifyBasicAuth, {
+    validate: async function (username, password, request, reply) {
+      if (
+        username !== (process.env.DOCS_USERNAME as string) ||
+        password !== (process.env.DOCS_PASSWORD as string)
+      ) {
+        return new Error("Unauthorized");
+      }
+    },
+    authenticate: { realm: "documentation" },
   });
 
   fastify.decorate(
