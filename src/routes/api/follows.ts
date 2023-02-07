@@ -1,5 +1,4 @@
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import { HeadersSchema } from "./schema";
 import { Type } from "@sinclair/typebox";
 
 const follows: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
@@ -8,13 +7,14 @@ const follows: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/:id/follows",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
         }),
         querystring: Type.Object({
           cursor: Type.Optional(Type.Number()),
         }),
+        tags: ["users"],
+        summary: "get users a user with :id is following",
       },
     },
     async function (request, reply) {

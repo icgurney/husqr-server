@@ -14,6 +14,7 @@ const index: FastifyPluginAsyncTypebox = async (
           username: Type.String(),
           password: Type.String(),
         }),
+        summary: "use this to retrieve a jwt",
       },
     },
     async function (request, reply) {

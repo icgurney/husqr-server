@@ -1,5 +1,4 @@
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import { HeadersSchema } from "./schema";
 import { Type } from "@sinclair/typebox";
 import { Prisma } from "@prisma/client";
 import {
@@ -13,13 +12,14 @@ const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/:id/likes",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
         }),
         querystring: Type.Object({
           cursor: Type.Optional(Type.Number()),
         }),
+        tags: ["husqs"],
+        summary: "get likes for a husq",
       },
     },
     async function (request, reply) {
@@ -67,10 +67,11 @@ const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/:id/likes",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
         }),
+        tags: ["husqs"],
+        summary: "like a husq",
       },
     },
     async function (request, reply) {
@@ -124,11 +125,12 @@ const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/:id/likes/:me",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
           me: Type.Number(),
         }),
+        tags: ["husqs"],
+        summary: "unlike a husq",
       },
       preHandler: fastify.auth([fastify.verifyTokenUserIsParamsMe]) as any,
     },

@@ -1,5 +1,4 @@
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import { HeadersSchema } from "./schema";
 import { Type } from "@sinclair/typebox";
 import replies from "./replies";
 import likes from "./likes";
@@ -11,11 +10,11 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/",
     {
       schema: {
-        headers: HeadersSchema,
         querystring: Type.Object({
           userId: Type.Optional(Type.Number()),
           cursor: Type.Optional(Type.Number()),
         }),
+        tags: ["husqs"],
       },
     },
     async function (request, reply) {
@@ -118,10 +117,10 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/:id",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
         }),
+        tags: ["husqs"],
       },
     },
     async function (request, reply) {
@@ -152,11 +151,12 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/",
     {
       schema: {
-        headers: HeadersSchema,
         body: Type.Object({
           text: Type.String(),
           replyId: Type.Optional(Type.Number()),
         }),
+        tags: ["husqs"],
+        summary: "create a husq",
       },
     },
     async function (request, reply) {
@@ -182,10 +182,10 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     "/:id",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
         }),
+        tags: ["husqs"],
       },
     },
     async function (request, reply) {

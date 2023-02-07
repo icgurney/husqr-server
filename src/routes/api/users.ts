@@ -1,5 +1,4 @@
 import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
-import { HeadersSchema } from "./schema";
 import { Type } from "@sinclair/typebox";
 import followers from "./followers";
 import follows from "./follows";
@@ -13,11 +12,11 @@ const users: FastifyPluginAsyncTypebox = async (
     "/",
     {
       schema: {
-        headers: HeadersSchema,
         querystring: Type.Object({
           username: Type.Optional(Type.String()),
           cursor: Type.Optional(Type.Number()),
         }),
+        tags: ["users"],
       },
     },
     async function (request, reply) {
@@ -49,10 +48,10 @@ const users: FastifyPluginAsyncTypebox = async (
     "/:id",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
         }),
+        tags: ["users"],
       },
     },
     async function (request, reply) {
@@ -70,7 +69,7 @@ const users: FastifyPluginAsyncTypebox = async (
     "/me",
     {
       schema: {
-        headers: HeadersSchema,
+        tags: ["users"],
       },
     },
     async function (request, reply) {
@@ -89,7 +88,6 @@ const users: FastifyPluginAsyncTypebox = async (
     "/:me",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           me: Type.Number(),
         }),
@@ -100,6 +98,7 @@ const users: FastifyPluginAsyncTypebox = async (
           },
           { additionalProperties: false }
         ),
+        tags: ["users"],
       },
       preHandler: fastify.auth([fastify.verifyTokenUserIsParamsMe]) as any,
     },
@@ -128,13 +127,14 @@ const users: FastifyPluginAsyncTypebox = async (
     "/:id/likes",
     {
       schema: {
-        headers: HeadersSchema,
         params: Type.Object({
           id: Type.Number(),
         }),
         querystring: Type.Object({
           cursor: Type.Optional(Type.Number()),
         }),
+        tags: ["users"],
+        summary: "get a list of husqs a user has liked",
       },
     },
     async function (request, reply) {

@@ -46,6 +46,7 @@ export default fp(async (fastify) => {
     "verifyJwt",
     async function (request: FastifyRequest, reply: FastifyReply) {
       try {
+        request.log.info(request.headers);
         await request.jwtVerify();
       } catch (err) {
         reply.send(err);
