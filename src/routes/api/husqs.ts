@@ -2,6 +2,8 @@ import { FastifyPluginAsyncTypebox } from "@fastify/type-provider-typebox";
 import { Type } from "@sinclair/typebox";
 import replies from "./replies";
 import likes from "./likes";
+import { Prisma } from "@prisma/client";
+import { PRISMA_FOREIGN_KEY_ERROR_CODE } from "../../plugins/prisma";
 
 const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
   // get cursor-paginated husqs in rev chron
@@ -172,6 +174,13 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
           },
         });
       } catch (e) {
+        if (e instanceof Prisma.PrismaClientKnownRequestError) {
+          if (e.code === PRISMA_FOREIGN_KEY_ERROR_CODE) {
+            return reply.badRequest(
+              `Husq with id=${request.body.replyId} not found`
+            );
+          }
+        }
         request.log.error(e);
         return reply.internalServerError();
       }

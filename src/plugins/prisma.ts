@@ -9,8 +9,10 @@ declare module "fastify" {
     prisma: PrismaClient;
   }
 }
+
 export const PRISMA_CONNECT_ERROR_CODE = "P2016";
 export const PRISMA_CONNECT_MULTI_ERROR_CODE = "P2025";
+export const PRISMA_FOREIGN_KEY_ERROR_CODE = "P2003";
 
 const prismaPlugin: FastifyPluginAsync = fp(async (fastify, options) => {
   const prisma = new PrismaClient();
