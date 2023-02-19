@@ -89,7 +89,6 @@ const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             id: id,
           },
           data: {
-            liked: true,
             likes: {
               connect: {
                 id: request.user.id,
@@ -150,7 +149,6 @@ const likes: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             id: id,
           },
           data: {
-            liked: false,
             likes: {
               disconnect: {
                 id: me,
