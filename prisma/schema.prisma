@@ -37,6 +37,7 @@ model Husq {
   text      String
   replies   Husq[]   @relation("Thread")
   reply     Husq?    @relation("Thread", fields: [replyId], references: [id])
+  liked     Boolean  @default(false)
   replyId   Int?
   likes     User[]   @relation("Likes")
 }

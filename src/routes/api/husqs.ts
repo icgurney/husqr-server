@@ -128,19 +128,6 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
     async function (request, reply) {
       try {
         const { id } = request.params;
-        const meLikey = await fastify.prisma.husq.findUnique({
-          where: {
-            id: id,
-          },
-          select: {
-            likes: {
-              where: {
-                id: request.user.id,
-              },
-            },
-          },
-        });
-
         const husq = await fastify.prisma.husq.findUnique({
           where: {
             id: id,
@@ -154,9 +141,7 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
             },
           },
         });
-        return husq
-          ? { ...husq, liked: !!meLikey?.likes.length }
-          : reply.notFound();
+        return husq ?? reply.notFound();
       } catch (e) {
         request.log.error(e);
         return reply.internalServerError();
