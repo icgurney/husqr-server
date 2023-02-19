@@ -19,7 +19,7 @@ const replies: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         const { id } = request.params;
         const { cursor } = request.query;
         if (cursor) {
-          return await fastify.prisma.husq.findMany({
+          const result = await fastify.prisma.husq.findMany({
             take: 10,
             skip: 1,
             cursor: {
@@ -35,13 +35,23 @@ const replies: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                   replies: true,
                 },
               },
+              likes: {
+                where: {
+                  id: request.user.id,
+                },
+              },
             },
             orderBy: {
               id: "asc",
             },
           });
+          return result.map((husq) => ({
+            ...husq,
+            likes: undefined,
+            liked: husq.likes.length > 0,
+          }));
         } else {
-          return await fastify.prisma.husq.findMany({
+          const result = await fastify.prisma.husq.findMany({
             take: 10,
             where: {
               replyId: id,
@@ -53,11 +63,21 @@ const replies: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                   replies: true,
                 },
               },
+              likes: {
+                where: {
+                  id: request.user.id,
+                },
+              },
             },
             orderBy: {
               id: "asc",
             },
           });
+          return result.map((husq) => ({
+            ...husq,
+            likes: undefined,
+            liked: husq.likes.length > 0,
+          }));
         }
       } catch (e) {
         request.log.error(e);

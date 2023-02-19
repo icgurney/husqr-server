@@ -24,7 +24,7 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         const { userId, cursor } = request.query;
 
         if (userId && cursor) {
-          return await fastify.prisma.husq.findMany({
+          const result = await fastify.prisma.husq.findMany({
             take: 10,
             skip: 1,
             cursor: {
@@ -41,13 +41,23 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                   replies: true,
                 },
               },
+              likes: {
+                where: {
+                  id: request.user.id,
+                },
+              },
             },
             orderBy: {
               id: "desc",
             },
           });
+          return result.map((husq) => ({
+            ...husq,
+            likes: undefined,
+            liked: husq.likes.length > 0,
+          }));
         } else if (userId && !cursor) {
-          return await fastify.prisma.husq.findMany({
+          const result = await fastify.prisma.husq.findMany({
             take: 10,
             where: {
               authorId: userId,
@@ -60,13 +70,23 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                   replies: true,
                 },
               },
+              likes: {
+                where: {
+                  id: request.user.id,
+                },
+              },
             },
             orderBy: {
               id: "desc",
             },
           });
+          return result.map((husq) => ({
+            ...husq,
+            likes: undefined,
+            liked: husq.likes.length > 0,
+          }));
         } else if (!userId && cursor) {
-          return await fastify.prisma.husq.findMany({
+          const result = await fastify.prisma.husq.findMany({
             take: 10,
             skip: 1,
             cursor: {
@@ -83,13 +103,23 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                   replies: true,
                 },
               },
+              likes: {
+                where: {
+                  id: request.user.id,
+                },
+              },
             },
             orderBy: {
               id: "desc",
             },
           });
+          return result.map((husq) => ({
+            ...husq,
+            likes: undefined,
+            liked: husq.likes.length > 0,
+          }));
         } else {
-          return await fastify.prisma.husq.findMany({
+          const result = await fastify.prisma.husq.findMany({
             take: 10,
             where: {
               deleted: false,
@@ -102,11 +132,21 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                   replies: true,
                 },
               },
+              likes: {
+                where: {
+                  id: request.user.id,
+                },
+              },
             },
             orderBy: {
               id: "desc",
             },
           });
+          return result.map((husq) => ({
+            ...husq,
+            likes: undefined,
+            liked: husq.likes.length > 0,
+          }));
         }
       } catch (e) {
         request.log.error(e);
@@ -139,9 +179,16 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
                 replies: true,
               },
             },
+            likes: {
+              where: {
+                id: request.user.id,
+              },
+            },
           },
         });
-        return husq ?? reply.notFound();
+        return husq
+          ? { ...husq, likes: undefined, liked: husq.likes.length > 0 }
+          : reply.notFound();
       } catch (e) {
         request.log.error(e);
         return reply.internalServerError();
@@ -166,13 +213,14 @@ const husqs: FastifyPluginAsyncTypebox = async (fastify): Promise<void> => {
         return reply.badRequest("Text max length is 140 characters");
       }
       try {
-        return await fastify.prisma.husq.create({
+        const husq = await fastify.prisma.husq.create({
           data: {
             text: request.body.text,
             authorId: request.user.id,
             replyId: request.body.replyId,
           },
         });
+        return { ...husq, liked: false };
       } catch (e) {
         if (e instanceof Prisma.PrismaClientKnownRequestError) {
           if (e.code === PRISMA_FOREIGN_KEY_ERROR_CODE) {

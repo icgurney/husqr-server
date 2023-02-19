@@ -142,61 +142,61 @@ const users: FastifyPluginAsyncTypebox = async (
         const { id } = request.params;
         const { cursor } = request.query;
         if (cursor) {
-          const result = await fastify.prisma.user.findUnique({
+          const result = await fastify.prisma.husq.findMany({
             where: {
-              id: id,
-            },
-            select: {
+              deleted: false,
               likes: {
-                take: 10,
-                skip: 1,
-                cursor: {
-                  id: cursor,
-                },
-                where: {
-                  deleted: false,
-                },
-                include: {
-                  _count: {
-                    select: {
-                      likes: true,
-                      replies: true,
-                    },
-                  },
-                },
-                orderBy: {
-                  id: "desc",
+                some: {
+                  id: id,
                 },
               },
             },
+            take: 10,
+            skip: 1,
+            cursor: {
+              id: cursor,
+            },
+            include: {
+              _count: {
+                select: {
+                  likes: true,
+                  replies: true,
+                },
+              },
+            },
+            orderBy: {
+              id: "desc",
+            },
           });
-          return result ? result.likes : reply.notFound();
+          return result.map(
+            (husq) => ({ ...husq, liked: true } ?? reply.notFound())
+          );
         } else {
-          const result = await fastify.prisma.user.findUnique({
+          const result = await fastify.prisma.husq.findMany({
             where: {
-              id: id,
-            },
-            select: {
+              deleted: false,
               likes: {
-                take: 10,
-                where: {
-                  deleted: false,
-                },
-                include: {
-                  _count: {
-                    select: {
-                      likes: true,
-                      replies: true,
-                    },
-                  },
-                },
-                orderBy: {
-                  id: "desc",
+                some: {
+                  id: id,
                 },
               },
             },
+            take: 10,
+            include: {
+              _count: {
+                select: {
+                  likes: true,
+                  replies: true,
+                },
+              },
+            },
+            orderBy: {
+              id: "desc",
+            },
           });
-          return result ? result.likes : reply.notFound();
+          return result.map(
+            (husq) => ({ ...husq, liked: true } ?? reply.notFound())
+          );
         }
       } catch (e) {
         request.log.error(e);
